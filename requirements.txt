@@ -1,7 +1,5 @@
 streamlit
 librosa
-numpy
-pandas
 scikit-learn
-matplotlib
-joblib
+xgboost
+numpy
