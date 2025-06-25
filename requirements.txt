@@ -3,3 +3,7 @@ librosa
 scikit-learn
 xgboost
 numpy
+soundfile
+protobuf
+matplotlib
+pandas
