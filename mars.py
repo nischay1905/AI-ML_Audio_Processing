@@ -3,34 +3,32 @@ import librosa
 import numpy as np
 import pickle
 
-# Load model
-with open("model.pkl", "rb") as f:
-    model = pickle.load(f)
+# Load the trained model
+with open("model.pkl", "rb") as m:
+    model = pickle.load(m)
 
-# Load label encoder
-with open("label_encoder.pkl", "rb") as f:
-    le = pickle.load(f)
+# Load the label encoder
+with open("label_encoder.pkl", "rb") as enc:
+    label_encoder = pickle.load(enc)
 
-# Function to extract MFCC from uploaded file
-def extract_mfcc(file, n_mfcc=40):
-    y, sr = librosa.load(file, sr=None)
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
-    mfcc_mean = np.mean(mfcc.T, axis=0)
-    return mfcc_mean.reshape(1, -1)
+# Function to extract MFCC features
+def extract_features(audio):
+    signal, sr = librosa.load(audio, sr=None)
+    mfccs = librosa.feature.mfcc(y=signal, sr=sr, n_mfcc=40)
+    return np.mean(mfccs.T, axis=0).reshape(1, -1)
 
-# Streamlit app UI
+# Streamlit UI
 st.title("🎵 Speech Emotion Classifier")
-st.markdown("Upload a `.wav` or `.mp3` file to predict the speaker's emotion.")
+st.write("Upload a .wav or .mp3 file to predict the emotion.")
 
-audio_file = st.file_uploader("Upload Audio", type=["wav", "mp3"])
+file = st.file_uploader("Choose an audio file", type=["wav", "mp3"])
 
-if audio_file is not None:
-    st.audio(audio_file, format='audio/wav')
-
+if file:
+    st.audio(file, format="audio/wav")
     try:
-        features = extract_mfcc(audio_file)
-        prediction = model.predict(features)
-        emotion = le.inverse_transform(prediction)[0]
-        st.success(f"🎤 Predicted Emotion: **{emotion.upper()}**")
+        features = extract_features(file)
+        pred = model.predict(features)
+        emotion = label_encoder.inverse_transform(pred)[0]
+        st.success(f"Predicted Emotion: *{emotion.upper()}*")
     except Exception as e:
-        st.error(f"❌ Error processing audio: {e}")
+        st.error(f"Could not process file: {e}")
